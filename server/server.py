@@ -18,7 +18,7 @@ def register():
     email, password = content['email'], content['password']
     email_match, password_match = email_validator(email), password_validator(password)
     if email_match == None:
-        abort(400, description="Invalid Email format")
+        abort(400, description="Invalid email")
 
     elif password_match == None:
         error_msg = "The password provided failed to match the following rules: <br> \
@@ -31,16 +31,23 @@ def register():
         db.session.add(user)
         db.session.commit()
         return jsonify({
-            'message': "Succesfully created",
-            'User': str(user)
+            'message': "You have been succesfully registered! Enjoy.",
         })
     except IntegrityError:
         abort(400, description="This e-mail already in use")
 
+@app.route("/login", methods=['POST'])
+def login():
+    content = request.get_json()
+    email, password = content['email'], content['password']
+    return jsonify({
+        'message' : 'Logged in'
+    })
+
 @app.errorhandler(400)
 def bad_request_handler(e):
-    return jsonify(error=str(e)), 400
-
+    e = str(e).replace("400 Bad Request:", "")
+    return jsonify(error=(e)), 400
 
 if __name__ == "__main__":
     app.run(port=8081)

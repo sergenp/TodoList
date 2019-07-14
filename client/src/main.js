@@ -6,9 +6,18 @@ import router from './router'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import Panel from './components/global/Panel'
+import colors from 'vuetify/es5/util/colors'
 
 Vue.config.productionTip = false
-Vue.use(Vuetify)
+Vue.use(Vuetify, {
+  theme: {
+    darkred: colors.red.darken1,
+    lightred: colors.red.lighten1,
+    primary: colors.red.darken2,
+    secondary: colors.red.lighten4,
+    accent: colors.indigo.base
+  }
+})
 Vue.component('panel', Panel)
 
 /* eslint-disable no-new */
