@@ -4,8 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from database import app, db
 from models import User
 from sqlalchemy.exc import IntegrityError
-import re
-
+from validator import email_validator, password_validator
 
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -17,9 +16,7 @@ db.create_all()
 def register():
     content = request.get_json()
     email, password = content['email'], content['password']
-    email_match = re.match(
-        '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
-    password_match = re.match('^[a-zA-Z0-9]{8,32}$', password)
+    email_match, password_match = email_validator(email), password_validator(password)
     if email_match == None:
         abort(400, description="Invalid Email format")
 
