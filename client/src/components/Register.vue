@@ -1,10 +1,34 @@
 <template>
-    <div>
-        <h1>Register</h1>
-        <input type="email" name="email" placeholder="email" v-model="email"/> <br>
-        <input type="password" name="password" placeholder="password" v-model="password"/> <br>
-        <button @click="register">Register</button>
-    </div>
+  <v-layout column>
+    <v-flex xs12>
+      <panel title="Register">
+        <form
+          name="tab-tracker-form"
+          autocomplete="off">
+          <v-text-field
+            label="Email"
+            v-model="email"
+          ></v-text-field>
+          <br>
+          <v-text-field
+            label="Password"
+            type="password"
+            v-model="password"
+            autocomplete="new-password"
+          ></v-text-field>
+        </form>
+        <br>
+        <div class="danger-alert" v-html="error" />
+        <br>
+        <v-btn
+          dark
+          class="red"
+          @click="register">
+          Register
+        </v-btn>
+      </panel>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
@@ -14,16 +38,21 @@ export default {
   data () {
     return {
       email: '',
-      password: ''
+      password: '',
+      error: null
     }
   },
   methods: {
     async register () {
-      const response = await AuthenticationService.register({
-        email: this.email,
-        password: this.password
-      })
-      console.log(response)
+      try {
+        await AuthenticationService.register({
+          email: this.email,
+          password: this.password
+        })
+        this.error = null
+      } catch (error) {
+        this.error = error.response.data.error
+      }
     }
   }
 }

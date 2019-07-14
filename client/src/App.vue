@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <router-view/>
+    <v-app>
+      <v-container fluid>
+        <router-view></router-view>
+      </v-container>
+    </v-app>
   </div>
 </template>
 
