@@ -1,26 +1,49 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
-from database import db
+from database import app, db
 from models import User
+from sqlalchemy.exc import IntegrityError
+import re
 
-app = Flask(__name__)
-cors = CORS(app)
+
+CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 db.create_all()
 
 
 @cross_origin()
 @app.route("/register", methods=['POST'])
-async def register():
+def register():
     content = request.get_json()
-    email = content['email']
-    password = content['password']
-    user = await User(email=email, password=password)
-    return jsonify({
-        'message' : "Succesfully created",
-        'User' : user
-    })
+    email, password = content['email'], content['password']
+    email_match = re.match(
+        '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
+    password_match = re.match('^[a-zA-Z0-9]{8,32}$', password)
+    if email_match == None:
+        abort(400, description="Invalid Email format")
+
+    elif password_match == None:
+        error_msg = "The password provided failed to match the following rules: <br> \
+1. It must contain ONLY the following characters: lower case, upper case, numerics.<br> \
+2. It must be at least 8 characters in length and not greater than 32 characters in length."
+        abort(400, description=error_msg)
+
+    user = User(email=email, password=password)
+    try:
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({
+            'message': "Succesfully created",
+            'User': str(user)
+        })
+    except IntegrityError:
+        abort(400, description="This e-mail already in use")
+
+@app.errorhandler(400)
+def bad_request_handler(e):
+    return jsonify(error=str(e)), 400
+
 
 if __name__ == "__main__":
     app.run(port=8081)
