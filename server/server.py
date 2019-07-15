@@ -38,9 +38,15 @@ def register():
     try:
         db.session.add(user)
         db.session.commit()
+        access_token = create_access_token(identity=str(user))
         return jsonify({
-            'message': "You have been succesfully registered! Enjoy."
-        })
+        'user' : {
+            'user_id' : user.user_id, 
+            'email' : user.email,
+            'password' : user.password
+        },
+        'token' : access_token
+    })
     except IntegrityError:
         abort(400, description="This e-mail already in use")
 
@@ -61,7 +67,6 @@ def login():
     
     access_token = create_access_token(identity=str(user))
     return jsonify({
-        'message' : 'Logged in',
         'user' : {
             'user_id' : user.user_id, 
             'email' : user.email,
