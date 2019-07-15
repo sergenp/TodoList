@@ -7,8 +7,9 @@
     </v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items>
-      <v-btn flat class="primary" @click="navigateTo('login')">Login</v-btn>
-      <v-btn flat class="primary" @click="navigateTo({name:'register'})">Register</v-btn>
+      <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('login')">Login</v-btn>
+      <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo({name:'register'})">Register</v-btn>
+      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary">Log Out</v-btn>
     </v-toolbar-items>
   </v-toolbar>
 </template>
