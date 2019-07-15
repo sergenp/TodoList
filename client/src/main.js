@@ -5,6 +5,8 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
+import {sync} from 'vuex-router-sync'
+import store from './store/store'
 import Panel from './components/global/Panel'
 import colors from 'vuetify/es5/util/colors'
 
@@ -18,12 +20,14 @@ Vue.use(Vuetify, {
     accent: colors.indigo.base
   }
 })
+sync(store, router)
 Vue.component('panel', Panel)
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

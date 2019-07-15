@@ -5,12 +5,7 @@
         <form>
           <v-text-field label="Email" v-model="email"></v-text-field>
           <br />
-          <v-text-field
-            label="Password"
-            type="password"
-            v-model="password"
-            autocomplete="new-password"
-          ></v-text-field>
+          <v-text-field label="Password" type="password" v-model="password"></v-text-field>
         </form>
         <br />
         <div class="danger-alert" v-html="error" />
@@ -23,7 +18,6 @@
 
 <script>
 import AuthenticationService from '../../services/AuthenticationService'
-
 export default {
   name: 'Login',
   data () {
@@ -36,10 +30,12 @@ export default {
   methods: {
     async login () {
       try {
-        await AuthenticationService.login({
+        const response = await AuthenticationService.login({
           email: this.email,
           password: this.password
         })
+        this.$store.dispatch('setToken', response.data.token)
+        this.$store.dispatch('setUser', response.data.user)
         this.error = null
       } catch (error) {
         this.error = error.response.data.error
