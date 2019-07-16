@@ -43,7 +43,6 @@ def register():
         'user' : {
             'user_id' : user.user_id, 
             'email' : user.email,
-            'password' : user.password
         },
         'token' : access_token
     })
@@ -69,8 +68,7 @@ def login():
     return jsonify({
         'user' : {
             'user_id' : user.user_id, 
-            'email' : user.email,
-            'password' : user.password
+            'email' : user.email
         },
         'token' : access_token
     })

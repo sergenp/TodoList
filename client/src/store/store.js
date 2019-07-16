@@ -1,10 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VuexPersist from 'vuex-persist'
 
 Vue.use(Vuex)
 
+const vuexPersist = new VuexPersist({
+  storage: window.localStorage
+})
 // tracking global states using Vuex
-export default new Vuex.Store({
+const store = new Vuex.Store({
   strict: true,
   state: {
     token: null,
@@ -25,11 +29,20 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    setToken ({commit}, token) {
+    setToken ({ commit }, token) {
       commit('setToken', token)
     },
-    setUser ({commit}, user) {
+    setUser ({ commit }, user) {
       commit('setUser', user)
     }
-  }
+  },
+  plugins: [vuexPersist.plugin]
 })
+
+// Subscribe to store updates
+store.subscribe((mutation, state) => {
+  // Store the state object as a JSON string
+  localStorage.setItem('store', JSON.stringify(state))
+})
+
+export default store

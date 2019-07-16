@@ -8,8 +8,8 @@
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('login')">Login</v-btn>
-      <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo({name:'register'})">Register</v-btn>
-      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary">Log Out</v-btn>
+      <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('register')">Register</v-btn>
+      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary" @click="logout()">Log Out</v-btn>
     </v-toolbar-items>
   </v-toolbar>
 </template>
@@ -20,6 +20,13 @@ export default {
   methods: {
     navigateTo (route) {
       this.$router.push(route)
+    },
+    logout () {
+      this.$store.dispatch('setToken', null)
+      this.$store.dispatch('setUser', null)
+      this.$router.push({
+        'name': 'home'
+      })
     }
   }
 }
