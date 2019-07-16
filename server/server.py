@@ -1,12 +1,8 @@
 #library imports
-from flask import Flask, request, jsonify, abort
+from flask import request, jsonify, abort
 from flask_cors import CORS, cross_origin
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
-)
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
 #custom imports
 from database import app, db
