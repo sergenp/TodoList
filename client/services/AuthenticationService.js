@@ -9,5 +9,8 @@ export default {
     },
     getTodos () {
         return Api().get('todos')
+    },
+    addTodos (todos) {
+        return Api().post('addTodo', todos)
     }
 }

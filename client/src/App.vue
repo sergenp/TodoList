@@ -1,14 +1,10 @@
 <template>
-  <div id="app">
-    <v-app>
-      <navbar />
-      <main>
-        <v-container fluid>
-          <router-view></router-view>
-        </v-container>
-      </main>
-    </v-app>
-  </div>
+  <v-app>
+    <navbar />
+    <v-container grid-list-md text-xs-center>
+      <router-view></router-view>
+    </v-container>
+  </v-app>
 </template>
 
 <script>

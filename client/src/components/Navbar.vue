@@ -6,7 +6,7 @@
       </span>
     </v-toolbar-title>
     <v-toolbar-items>
-      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('todos')">Todos</v-btn>
+      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('myTodos')">My Todos</v-btn>
     </v-toolbar-items>
     <v-spacer></v-spacer>
     <v-toolbar-items>

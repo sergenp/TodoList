@@ -1,6 +1,6 @@
 <template>
   <v-layout column>
-    <v-flex xs12>
+    <v-flex xs6>
       <panel title="Register">
         <form>
           <v-text-field label="Email" v-model="email"></v-text-field>
@@ -37,7 +37,7 @@ export default {
         this.$store.dispatch('setToken', response.data.token)
         this.$store.dispatch('setUser', response.data.user)
         this.$router.push({
-          'name': 'home'
+          'name': 'myTodos'
         })
       } catch (error) {
         this.error = error.response.data.error

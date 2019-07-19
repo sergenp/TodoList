@@ -9,6 +9,7 @@ import {sync} from 'vuex-router-sync'
 import store from './store/store'
 import Panel from './components/global/Panel'
 import colors from 'vuetify/es5/util/colors'
+import moment from 'moment'
 
 Vue.config.productionTip = false
 Vue.use(Vuetify, {
@@ -20,6 +21,13 @@ Vue.use(Vuetify, {
     accent: colors.indigo.base
   }
 })
+
+Vue.filter('currentDate', function (value) {
+  if (value) {
+    return moment().format('MMMM Do YYYY, h:mm:ss a')
+  }
+})
+
 sync(store, router)
 Vue.component('panel', Panel)
 

@@ -1,5 +1,6 @@
 from database import db
 from passlib.hash import bcrypt
+from time import gmtime, strftime
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
@@ -25,7 +26,15 @@ class Todos(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     todo_title = db.Column(db.String(255), nullable=False)
     todo_body = db.Column(db.String(255), nullable=False)
-    completed = db.Column(db.Boolean, default=False, nullable=False)
+    completed = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+    finished_at = db.Column(db.DateTime, nullable=True, default=None)
+
+    def __init__(self, user_id, todo_title, todo_body, completed):
+        self.user_id = user_id
+        self.todo_title = todo_title
+        self.todo_body = todo_body
+        self.completed = completed
 
     def __repr__(self):
         reprDict = {
