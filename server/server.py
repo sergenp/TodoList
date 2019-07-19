@@ -2,7 +2,7 @@
 from flask import request, jsonify, abort
 from flask_cors import CORS, cross_origin
 from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 
 #custom imports
 from database import app, db
@@ -10,7 +10,7 @@ from models import User
 from validator import email_validator, password_validator
 
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
-app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['CORS_HEADERS'] = ['Content-Type', 'Authorization']
 CORS(app)
 jwt = JWTManager(app)
 db.create_all()
@@ -34,7 +34,7 @@ def register():
     try:
         db.session.add(user)
         db.session.commit()
-        access_token = create_access_token(identity=str(user))
+        access_token = create_access_token(identity=str(user.email))
         return jsonify({
         'user' : {
             'user_id' : user.user_id, 
@@ -60,7 +60,7 @@ def login():
     if not (user.validate_password(password)):
         abort(403, description="Login information is incorrect")        
     
-    access_token = create_access_token(identity=str(user))
+    access_token = create_access_token(identity=str(user.email))
     return jsonify({
         'user' : {
             'user_id' : user.user_id, 
@@ -68,6 +68,22 @@ def login():
         },
         'token' : access_token
     })
+
+@cross_origin()
+@app.route("/todos", methods=['GET'])
+@jwt_required
+def getTodos():
+    current_user = get_jwt_identity()
+    user = db.session.query(User).filter(User.email == current_user).first()
+    if user:
+        return jsonify({
+            'user' : {
+                'user_id' : user.user_id,
+                'email' : user.email
+            }
+        })
+    else:
+        abort(403, description="You are not allowed to visit this page")
 
 @app.errorhandler(403)
 def forbidden(e):

@@ -1,6 +1,6 @@
 <template>
   <div class="white elevation-2">
-    <v-toolbar flat dense class="darkred" dark>
+    <v-toolbar flat dense class="darkRed" dark>
       <v-toolbar-title>{{title}}</v-toolbar-title>
       <slot name="action" />
     </v-toolbar>

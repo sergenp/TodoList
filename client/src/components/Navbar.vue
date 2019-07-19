@@ -5,6 +5,9 @@
         Todos App
       </span>
     </v-toolbar-title>
+    <v-toolbar-items>
+      <v-btn v-if="$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('todos')">Todos</v-btn>
+    </v-toolbar-items>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn v-if="!$store.state.isUserLoggedIn" flat class="primary" @click="navigateTo('login')">Login</v-btn>

@@ -10,7 +10,7 @@
         <br />
         <div class="danger-alert" v-html="error" />
         <br />
-        <v-btn dark class="lightred" @click="register">Register</v-btn>
+        <v-btn dark class="lightRed" @click="register">Register</v-btn>
       </panel>
     </v-flex>
   </v-layout>

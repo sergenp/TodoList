@@ -13,8 +13,8 @@ import colors from 'vuetify/es5/util/colors'
 Vue.config.productionTip = false
 Vue.use(Vuetify, {
   theme: {
-    darkred: colors.red.darken1,
-    lightred: colors.red.lighten1,
+    darkRed: colors.red.darken1,
+    lightRed: colors.red.lighten1,
     primary: colors.red.darken2,
     secondary: colors.red.lighten4,
     accent: colors.indigo.base
