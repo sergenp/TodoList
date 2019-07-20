@@ -1,10 +1,11 @@
-#library imports
+# library imports
 from flask import request, jsonify, abort
 from flask_cors import CORS, cross_origin
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+import datetime
 
-#custom imports
+# custom imports
 from database import app, db
 from models import User
 from validator import email_validator, password_validator
@@ -14,6 +15,7 @@ app.config['CORS_HEADERS'] = ['Content-Type', 'Authorization']
 CORS(app)
 jwt = JWTManager(app)
 db.create_all()
+
 
 @cross_origin()
 @app.route("/register", methods=['POST'])
@@ -34,16 +36,18 @@ def register():
     try:
         db.session.add(user)
         db.session.commit()
-        access_token = create_access_token(identity=str(user.email))
+        expires = datetime.timedelta(days=7)
+        access_token = create_access_token(identity=str(user.email), expires_delta=expires)
         return jsonify({
-        'user' : {
-            'user_id' : user.user_id, 
-            'email' : user.email,
-        },
-        'token' : access_token
-    })
+            'user': {
+                'user_id': user.user_id,
+                'email': user.email,
+            },
+            'token': access_token
+        })
     except IntegrityError:
         abort(400, description="This e-mail already in use")
+
 
 @cross_origin()
 @app.route("/login", methods=['POST'])
@@ -58,16 +62,19 @@ def login():
         abort(403, description="Login information is incorrect")
 
     if not (user.validate_password(password)):
-        abort(403, description="Login information is incorrect")        
-    
-    access_token = create_access_token(identity=str(user.email))
+        abort(403, description="Login information is incorrect")
+
+    expires = datetime.timedelta(days=7)
+    access_token = create_access_token(
+        identity=str(user.email), expires_delta=expires)
     return jsonify({
-        'user' : {
-            'user_id' : user.user_id, 
-            'email' : user.email
+        'user': {
+            'user_id': user.user_id,
+            'email': user.email
         },
-        'token' : access_token
+        'token': access_token
     })
+
 
 @cross_origin()
 @app.route("/todos", methods=['GET'])
@@ -77,23 +84,26 @@ def getTodos():
     user = db.session.query(User).filter(User.email == current_user).first()
     if user:
         return jsonify({
-            'user' : {
-                'user_id' : user.user_id,
-                'email' : user.email
+            'user': {
+                'user_id': user.user_id,
+                'email': user.email
             }
         })
     else:
         abort(403, description="You are not allowed to visit this page")
+
 
 @app.errorhandler(403)
 def forbidden(e):
     e = str(e).replace("403 Forbidden:", "")
     return(jsonify(error=e)), 403
 
+
 @app.errorhandler(400)
 def bad_request_handler(e):
     e = str(e).replace("400 Bad Request:", "")
     return jsonify(error=(e)), 400
+
 
 if __name__ == "__main__":
     app.run(port=8081)

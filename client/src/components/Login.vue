@@ -1,6 +1,6 @@
 <template>
-  <v-layout column>
-    <v-flex xs6>
+  <v-layout row>
+    <v-flex xs6 offset-xs3>
       <panel title="Login">
         <form>
           <v-text-field label="Email" v-model="email"></v-text-field>

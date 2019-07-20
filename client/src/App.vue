@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <navbar />
-    <v-container grid-list-md text-xs-center>
+    <v-container justify-center grid-list-md text-xs-center fill-height>
       <router-view></router-view>
     </v-container>
   </v-app>
