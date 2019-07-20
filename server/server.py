@@ -7,7 +7,7 @@ import datetime
 
 # custom imports
 from database import app, db
-from models import User
+from models import User, Todos
 from validator import email_validator, password_validator
 
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
@@ -24,7 +24,8 @@ def register():
         abort(400, description="Missing JSON in request")
     content = request.get_json()
     email, password = content['email'], content['password']
-    email_match, password_match = email_validator(email), password_validator(password)
+    email_match, password_match = email_validator(
+        email), password_validator(password)
     if email_match == None:
         abort(400, description="Invalid email")
 
@@ -37,7 +38,8 @@ def register():
         db.session.add(user)
         db.session.commit()
         expires = datetime.timedelta(days=7)
-        access_token = create_access_token(identity=str(user.email), expires_delta=expires)
+        access_token = create_access_token(
+            identity=str(user.email), expires_delta=expires)
         return jsonify({
             'user': {
                 'user_id': user.user_id,
@@ -77,20 +79,58 @@ def login():
 
 
 @cross_origin()
-@app.route("/todos", methods=['GET'])
+@app.route("/getTodos", methods=['GET'])
 @jwt_required
 def getTodos():
     current_user = get_jwt_identity()
     user = db.session.query(User).filter(User.email == current_user).first()
     if user:
-        return jsonify({
-            'user': {
-                'user_id': user.user_id,
-                'email': user.email
-            }
-        })
+        todo_list = []
+        todos = db.session.query(Todos).filter(Todos.user_id == user.user_id).all()
+        for todo in todos:
+            todo_list.append({
+                'todo_title' : todo.todo_title,
+                'todo_body' : todo.todo_body,
+                'completed' : todo.completed,
+                'created_at' : todo.created_at,
+                'completed_at' : todo.completed_at
+            })
+        return jsonify(todo_list)
     else:
-        abort(403, description="You are not allowed to visit this page")
+        abort(401, description="You are not allowed to visit this page")
+
+
+@cross_origin
+@app.route("/saveTodos", methods=['POST'])
+@jwt_required
+def saveTodos():
+    if not request.is_json:
+        abort(400, description="Missing JSON in request")
+
+    current_user = get_jwt_identity()
+    user = db.session.query(User).filter(User.email == current_user).first()
+    if user:
+        try:
+            num_rows_deleted = db.session.query(Todos).filter(Todos.user_id==user.user_id).delete()
+            content = request.get_json()
+            for todo in content:
+                todo_title = todo['todo_title']
+                todo_body = todo['todo_body']
+                completed = todo["completed"]
+                created_at = todo["created_at"]
+                completed_at = todo["completed_at"]
+                todoModel = Todos(user_id=user.user_id, todo_title=todo_title, todo_body=todo_body,
+                            completed=completed, completed_at=completed_at, created_at=created_at)
+                db.session.add(todoModel)
+            db.session.commit()
+            return jsonify({
+                'message' : 'Saved successfully',
+                'todo' : content            
+            })
+        except Exception:
+            abort(500)
+    else:
+        abort(401, description="You are not allowed to visit this page")
 
 
 @app.errorhandler(403)

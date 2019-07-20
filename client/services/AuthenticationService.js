@@ -8,9 +8,9 @@ export default {
         return Api().post('login', credentials)
     },
     getTodos () {
-        return Api().get('todos')
+        return Api().get('getTodos')
     },
-    addTodos (todos) {
-        return Api().post('addTodo', todos)
+    saveTodos (todos) {
+        return Api().post('saveTodos', todos)
     }
 }

@@ -38,7 +38,7 @@
                         </v-text-field>
                       </v-flex>
                       <v-flex xs12 sm6 md4>
-                        <v-text-field v-model="editedItem.finished_at" label="Finished At"></v-text-field>
+                        <v-text-field v-model="editedItem.completed_at" label="Completed At"></v-text-field>
                       </v-flex>
                     </v-layout>
                   </v-container>
@@ -53,7 +53,7 @@
             <v-spacer></v-spacer>
             <v-text-field v-model="search" append-icon="search" label="Search" single-line hide-details></v-text-field>
           </v-toolbar>
-          <v-data-table :headers="headers" :items="todos" :search="search">
+          <v-data-table :loading="todosLoading" :headers="headers" :items="todos" :search="search">
             <template v-slot:items="props">
               <td class="text-xs-left">{{ props.item.todo_title }}</td>
               <td class="text-xs-left">{{ props.item.todo_body }}</td>
@@ -61,7 +61,7 @@
                 <v-checkbox @click="setCompleted(props.item)" v-model="props.item.completed" primary hide-details></v-checkbox>
               </td>
               <td class="text-xs-left">{{ props.item.created_at }}</td>
-              <td class="text-xs-left">{{ props.item.finished_at }}</td>
+              <td class="text-xs-left">{{ props.item.completed_at }}</td>
               <td class="justify-center layout px-0">
                 <v-icon small class="mr-2" @click="editItem(props.item)">
                   edit
@@ -73,7 +73,7 @@
             </template>
           </v-data-table>
           <v-btn :disabled="saveToDbDialog" :loading="saveToDbDialog" class="white--text" color="lightRed" @click="saveToDbDialog=true">Save The List</v-btn>
-          <v-dialog v-model="saveToDbDialog" hide-overlay persistent width="300">
+          <v-dialog v-model="saveToDbDialog" hide-overlay persistent width="250">
             <v-card color="primary" dark>
               <v-card-text class="text-xs-center">
                 Saving list to Database
@@ -81,7 +81,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
-          <v-dialog v-model="savedSuccess" hide-overlay persistent width="300">
+          <v-dialog v-model="savedSuccessDialog" hide-overlay persistent width="250">
             <v-card color="primary" dark>
               <v-card-text class="text-xs-center">
                 Saved Successfully
@@ -104,13 +104,14 @@ export default {
     search: '',
     editItemDialog: false,
     saveToDbDialog: false,
-    savedSuccess: false,
+    savedSuccessDialog: false,
+    todosLoading: true,
     headers: [
-      { text: 'Todo Title', align: 'left', value: 'todo_title' },
+      { text: 'Title', align: 'left', value: 'todo_title' },
       { text: 'Description', value: 'todo_body' },
       { text: 'Completed', value: 'completed' },
       { text: 'Created At', value: 'created_at' },
-      { text: 'Finished At', value: 'finished_at' },
+      { text: 'Completed At', value: 'completed_at' },
       { text: 'Actions', value: 'name', sortable: false }
     ],
     todos: [],
@@ -120,14 +121,14 @@ export default {
       todo_body: '',
       completed: false,
       created_at: null,
-      finished_at: null
+      completed_at: null
     },
     defaultItem: {
       todo_title: '',
       todo_body: '',
       completed: false,
       created_at: null,
-      finished_at: null
+      completed_at: null
     }
   }),
   computed: {
@@ -141,13 +142,13 @@ export default {
     },
     async saveToDbDialog (val) {
       if (!val) return
-      await this.getTodos()
+      await this.saveTodos()
       this.saveToDbDialog = false
-      this.savedSuccess = true
+      this.savedSuccessDialog = true
     },
-    savedSuccess (val) {
+    savedSuccessDialog (val) {
       setTimeout(() => {
-        this.savedSuccess = false
+        this.savedSuccessDialog = false
       }, 1000)
     }
   },
@@ -155,8 +156,8 @@ export default {
     this.initialize()
   },
   methods: {
-    async getTodos () {
-      const response = await AuthenticationService.getTodos()
+    async saveTodos () {
+      const response = await AuthenticationService.saveTodos(this.todos)
       console.log(response.data)
     },
     getCurrentDate () {
@@ -166,30 +167,10 @@ export default {
       this.$router.push(route)
     },
 
-    initialize () {
-      this.todos = [
-        {
-          todo_title: 'Frozen Yogurt',
-          todo_body: 'Buy frozen yogurt. Get off your ass',
-          created_at: 24,
-          finished_at: 4.0,
-          completed: false
-        },
-        {
-          todo_title: 'Ice cream sandwich',
-          todo_body: 'Buy Ice cream sandwich. Get off your ass',
-          created_at: 9.0,
-          finished_at: 37,
-          completed: false
-        },
-        {
-          todo_title: 'Eclair',
-          todo_body: 'Buy Eclair. Get off your ass',
-          created_at: 16.0,
-          finished_at: 23,
-          completed: false
-        }
-      ]
+    async initialize () {
+      const response = await AuthenticationService.getTodos(this.todos)
+      this.todos = response.data
+      this.todosLoading = false
     },
 
     editItem (item) {
@@ -205,7 +186,7 @@ export default {
 
     setCompleted (item) {
       const index = this.todos.indexOf(item)
-      this.todos[index].finished_at = this.getCurrentDate()
+      this.todos[index].completed_at = this.getCurrentDate()
     },
 
     close () {
@@ -223,10 +204,6 @@ export default {
         this.todos.push(this.editedItem)
       }
       this.close()
-    },
-
-    saveTodos () {
-
     }
   }
 }
