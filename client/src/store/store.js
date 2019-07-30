@@ -29,9 +29,7 @@ const store = new Vuex.Store({
       state.user = user
     },
     setUserTodos (state, UserTodos) {
-      if (state.token) {
-        state.UserTodos = UserTodos
-      }
+      state.UserTodos = UserTodos
     }
   },
   actions: {
