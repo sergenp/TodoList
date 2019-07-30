@@ -13,7 +13,8 @@ const store = new Vuex.Store({
   state: {
     token: null,
     user: null,
-    isUserLoggedIn: false
+    isUserLoggedIn: false,
+    UserTodos: []
   },
   mutations: {
     setToken (state, token) {
@@ -26,6 +27,11 @@ const store = new Vuex.Store({
     },
     setUser (state, user) {
       state.user = user
+    },
+    setUserTodos (state, UserTodos) {
+      if (state.token) {
+        state.UserTodos = UserTodos
+      }
     }
   },
   actions: {
@@ -34,6 +40,9 @@ const store = new Vuex.Store({
     },
     setUser ({ commit }, user) {
       commit('setUser', user)
+    },
+    setUserTodos ({ commit }, UserTodos) {
+      commit('setUserTodos', UserTodos)
     }
   },
   plugins: [vuexPersist.plugin]

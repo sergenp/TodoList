@@ -7,7 +7,7 @@
         </v-toolbar>
         <div row wrap expand class="pl-4 pr-4 pt-4 pb-4">
           <v-toolbar flat color="white">
-            <v-dialog v-model="editItemDialog" max-width="1000px">
+            <v-dialog v-model="editItemDialog" max-width="800px" class="text-xs-center">
               <template v-slot:activator="{ on }">
                 <v-btn color="lightRed" dark class="mb-2" v-on="on">Add New Todo</v-btn>
               </template>
@@ -15,32 +15,31 @@
                 <v-card-title color="accent">
                   <span class="headline">{{ formTitle }}</span>
                 </v-card-title>
-                <v-card-text>
-                  <v-container grid-list-md>
-                    <v-layout wrap>
-                      <v-flex xs12 sm6 md4>
-                        <v-text-field v-model="editedItem.todo_title" label="Todo Title"></v-text-field>
-                      </v-flex>
-                      <v-flex xs12 sm6 md4>
-                        <v-text-field v-model="editedItem.todo_body" label="Description"></v-text-field>
-                      </v-flex>
-                      <v-flex xs12 sm6 md4>
-                        <v-text-field v-model="editedItem.created_at" label="Created At">
-                          <v-date-picker v-model="editedItem.created_at" no-title scrollable>
-                            <v-spacer></v-spacer>
-                            <v-btn flat color="primary">
-                              Cancel
-                            </v-btn>
-                            <v-btn flat color="primary">
-                              OK
-                            </v-btn>
-                          </v-date-picker>
-                        </v-text-field>
-                      </v-flex>
-                      <v-flex xs12 sm6 md4>
-                        <v-text-field v-model="editedItem.completed_at" label="Completed At"></v-text-field>
-                      </v-flex>
-                    </v-layout>
+                <v-card-text center>
+                  <v-container alight-content-center>
+                  <v-flex xs12 sm6 md4>
+                    <v-text-field v-model="editedItem.todo_title" label="Todo Title"></v-text-field>
+                  </v-flex>
+                  <v-flex xs12 sm6 md4>
+                    <v-text-field v-model="editedItem.todo_body" label="Description"></v-text-field>
+                  </v-flex>
+                  
+                  <v-flex xs12 sm6 md4>
+                    <v-text-field v-model="editedItem.created_at" label="Created At">
+                      <v-date-picker v-model="editedItem.created_at" no-title scrollable>
+                        <v-spacer></v-spacer>
+                        <v-btn flat color="primary">
+                          Cancel
+                        </v-btn>
+                        <v-btn flat color="primary">
+                          OK
+                        </v-btn>
+                      </v-date-picker>
+                    </v-text-field>
+                  </v-flex>
+                  <v-flex xs12 sm6 md4>
+                    <v-text-field v-model="editedItem.completed_at" label="Completed At"></v-text-field>
+                  </v-flex>
                   </v-container>
                 </v-card-text>
                 <v-card-actions>
@@ -58,7 +57,7 @@
               <td class="text-xs-left">{{ props.item.todo_title }}</td>
               <td class="text-xs-left">{{ props.item.todo_body }}</td>
               <td class="text-xs-left completed">
-                <v-checkbox @click="setCompleted(props.item)" v-model="props.item.completed" primary hide-details></v-checkbox>
+                <v-checkbox v-model="props.item.completed" primary hide-details></v-checkbox>
               </td>
               <td class="text-xs-left">{{ props.item.created_at }}</td>
               <td class="text-xs-left">{{ props.item.completed_at }}</td>
@@ -76,7 +75,7 @@
           <v-dialog v-model="saveToDbDialog" hide-overlay persistent width="250">
             <v-card color="primary" dark>
               <v-card-text class="text-xs-center">
-                Saving list to Database
+                Saving...
                 <v-progress-linear indeterminate color="accent" class="mb-0"></v-progress-linear>
               </v-card-text>
             </v-card>
@@ -88,6 +87,7 @@
               </v-card-text>
             </v-card>
           </v-dialog>
+          <v-alert class="text-xs-center" :value="error" type="error">{{ errorDescription }}</v-alert>
         </div>
       </div>
     </v-flex>
@@ -102,6 +102,8 @@ export default {
   data: () => ({
 
     search: '',
+    error: false,
+    errorDescription: '',
     editItemDialog: false,
     saveToDbDialog: false,
     savedSuccessDialog: false,
@@ -133,7 +135,7 @@ export default {
   }),
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'New Todo' : 'Edit Todo'
     }
   },
   watch: {
@@ -142,9 +144,14 @@ export default {
     },
     async saveToDbDialog (val) {
       if (!val) return
-      await this.saveTodos()
-      this.saveToDbDialog = false
+      try {
+        await this.saveTodos()
+      } catch (e) {
+        this.throwError(e)
+        return
+      }
       this.savedSuccessDialog = true
+      this.saveToDbDialog = false
     },
     savedSuccessDialog (val) {
       setTimeout(() => {
@@ -156,9 +163,29 @@ export default {
     this.initialize()
   },
   methods: {
+    throwError (err) {
+      this.error = true
+      this.errorDescription = err.toString()
+      this.saveToDbDialog = false
+      this.savedSuccessDialog = false
+      this.todosLoading = false
+    },
+
+    resetError () {
+      this.error = false
+      this.errorDescription = null
+      this.saveToDbDialog = false
+      this.savedSuccessDialog = false
+      this.todosLoading = true
+    },
+
     async saveTodos () {
-      const response = await AuthenticationService.saveTodos(this.todos)
-      console.log(response.data)
+      try {
+        await AuthenticationService.saveTodos(this.todos)
+        this.$store.dispatch('setUserTodos', this.todos)
+      } catch (e) {
+        this.throwError(e)
+      }
     },
     getCurrentDate () {
       return moment().format('MMMM Do YYYY, h:mm:ss a')
@@ -166,29 +193,34 @@ export default {
     navigateTo (route) {
       this.$router.push(route)
     },
-
     async initialize () {
-      const response = await AuthenticationService.getTodos(this.todos)
-      this.todos = response.data
-      this.todosLoading = false
+      if (this.$store.state.UserTodos.length > 0) {
+        this.todos = this.$store.state.UserTodos
+        this.todosLoading = false
+      } else {
+        try {
+          const response = await AuthenticationService.getTodos(this.todos)
+          this.todos = response.data
+          this.todosLoading = false
+          this.$store.dispatch('setUserTodos', this.todos)
+        } catch (e) {
+          this.throwError(e)
+        }
+      }
     },
-
     editItem (item) {
       this.editedIndex = this.todos.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.editItemDialog = true
     },
-
     deleteItem (item) {
       const index = this.todos.indexOf(item)
       confirm('Are you sure you want to delete this item?') && this.todos.splice(index, 1)
     },
-
     setCompleted (item) {
       const index = this.todos.indexOf(item)
       this.todos[index].completed_at = this.getCurrentDate()
     },
-
     close () {
       this.editItemDialog = false
       setTimeout(() => {
@@ -196,7 +228,6 @@ export default {
         this.editedIndex = -1
       }, 300)
     },
-
     save () {
       if (this.editedIndex > -1) {
         Object.assign(this.todos[this.editedIndex], this.editedItem)
